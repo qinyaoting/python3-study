@@ -60,7 +60,18 @@ finally:
 
 统计词频v3
 '''
+from string import punctuation
+from collections import Counter
+from itertools import chain
+
+def countInFile(filename):
+    with open(filename) as f:
+        linewords = (line.strip().translate(punctuation).lower().split() for line in f)
+        return Counter(chain.from_iterable(linewords))
 '''
 
 统计词频v4
+https://stackoverflow.com/questions/35857519/efficiently-count-word-frequencies-in-python
 '''
+if __name__ == '__main__':
+    print(countInFile("./data"))
