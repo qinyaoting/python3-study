@@ -13,10 +13,10 @@ print(sorted(['bob', 'about', 'Zoo', 'Credit']))
 # 忽略大小写
 print(sorted(['bob', 'about', 'Zoo', 'Credit'], key=str.lower))
 # 反序o
-print((sorted(['bob', 'about', 'Zoo', 'Credit'],key=str.lower, reverse=True)))
+print((sorted(['bob', 'about', 'Zoo', 'Credit'], key=str.lower, reverse=True)))
 
 
-L =  [('Bob', 75), ('Adam', 92), ('Bart', 66), ('Lisa', 88)]
+L = [('Bob', 75), ('Adam', 92), ('Bart', 66), ('Lisa', 88)]
 print(sorted(L, key=lambda x:(x[0].lower(), x[1])))
 
 

@@ -6,6 +6,9 @@
 
 # 可变参数的求和
 # 通常的定义方法
+import types
+
+
 def calc_sum(*args):
     ax = 0
     for num in args:
@@ -22,7 +25,7 @@ def lazy_sum(*args):
     return sum  # 返回的函数不带括号, 注意了
 
 f = lazy_sum(1,3,5,7,9)
-print(f)
+print(isinstance(f, types.FunctionType))
 
 # 只有调用f(),才真正计算求和结果
 print(f())
@@ -37,7 +40,7 @@ print(f1 == f2)
 # 闭包
 def count():
     fs = []
-    for i in range(1,4):
+    for i in range(1, 4):
         def f():
             return i*i
         fs.append(f)
