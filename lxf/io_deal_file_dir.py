@@ -55,3 +55,29 @@ if __name__ == '__main__':
 
     # 列出.py结尾的文件
     print([x for x in os.listdir('.') if os.path.isfile(x) and os.path.splitext(x)[1] == '.py'])
+
+
+    # 如果目录不存在就创建
+    # if the output directory does not exist, create it
+    save_path = './test_images'
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    # 用字典实现计数
+    counts = {}
+    letter = 'a'
+    for i in range(10):
+        count = counts.get(letter, 1)
+        counts[letter] = count+1
+
+
+    # zfill(6), 往前补0
+    i = 1
+    p = os.path.join(save_path, '{}.png'.format(str(i).zfill(6)))
+    print(p)
+
+
+    # zip 可以同时遍历
+    for li, ch in zip([(1,1,1,),(2,2,2),(3,3,3)], 'XYZ'):
+        print(li, ch)
+
