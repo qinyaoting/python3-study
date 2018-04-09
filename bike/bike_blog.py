@@ -143,26 +143,27 @@ def run_network(model=None, data=None):
 
     return model, y_test, predicted
 
+
 if __name__ == '__main__':
     # data_bike_num()
-    # run_network()
+    run_network()
 
     # list创建np array
-    list = [[1,2,3], [4,5,6], [7,8,9]]
-    result = np.asarray(list, dtype='float64')
-    print(result)
+    # list = [[1,2,3], [4,5,6], [7,8,9]]
+    # result = np.asarray(list, dtype='float64')
+    # print(result)
     # 全部元素取平均数量
-    res_mean = result.mean()
+    # res_mean = result.mean()
 
-    print(res_mean)
+    # print(res_mean)
     # 每个元素减去平均数量
-    result -= res_mean
-    print(result)
+    # result -= res_mean
+    # print(result)
 
-    csv_data = read_csv('./bike_rnn.csv',
-                        header=0,
-                        parse_dates=[0],
-                        index_col=0
-                        )
-    print(csv_data)
+    # csv_data = read_csv('./bike_rnn.csv',
+    #                     header=0,
+    #                     parse_dates=[0],
+    #                     index_col=0
+    #                     )
+    # print(csv_data)
 
