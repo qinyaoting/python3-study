@@ -6,6 +6,12 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 from numpy import shape
 import matplotlib.ticker as ticker
+'''
+1. 画图
+2. 构造模型
+3. 那个维度是用来验证结果
+
+'''
 
 """
 Load data into pandas
@@ -14,6 +20,7 @@ df = pd.read_csv('WindPower2012.csv', error_bad_lines=False)
 print("Length of original data : ", len(df))
 
 # calculat the mean value for every hour and save as a new dataframe
+# 每隔5分钟收集一次数据, 一个小时收集12次, 把12次合并到每小时计算平均值
 data2 = []
 for i in range(len(df) // 12):
     data2.append(df[i * 12:(i + 1) * 12].mean())
@@ -21,6 +28,7 @@ data2 = pd.DataFrame(data2)
 print("Length of hourly averaged data : ", len(data2))
 
 # Get the values of the 6-11 columns
+# 取6到10列 power 风向 风速 气温 气压
 data = data2.iloc[:, 5:11].values
 
 """
@@ -29,7 +37,7 @@ Next we set the RNN model parameters. We will run the data through 20 epochs, in
 The RNN will be of size 10 units.   
 """
 rnn_unit = 10  # hidden layer units
-input_size = 5
+input_size = 5  # 对应5列数据
 output_size = 1
 lr = 0.0006  # learning rate
 
@@ -67,19 +75,21 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
 
     # normalize the data
     scaler_for_x = MinMaxScaler(feature_range=(0, 1))
-
+    # 把数据缩放到0到1
     scaled_x_data = scaler_for_x.fit_transform(data)
 
     scaler_for_y = MinMaxScaler(feature_range=(0, 1))
-    scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))
+    # 取第一列为y_data
+    scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))   #?2
 
     # get train data
+    # 0-6000为训练集
     normalized_train_data = scaled_x_data[train_begin:train_end]
     train_x, train_y = [], []
     for i in range(len(normalized_train_data) - time_step):
         if i % batch_size == 0:
             batch_index.append(i)
-        x = normalized_train_data[i:i + time_step, 1:6]
+        x = normalized_train_data[i:i + time_step, 1:6]     #?1
         y = normalized_train_data[i + 1:i + time_step + 1, 0, np.newaxis]
         train_x.append(x.tolist())
         train_y.append(y.tolist())
@@ -105,6 +115,7 @@ def get_test_data(time_step, test_begin, test_len):
 
     # get test data
     size = test_len // time_step
+    # 6000-6180
     normalized_test_data = scaled_x_data[test_begin: (test_begin + test_len)]
     normalized_test_lable = scaled_x_data[test_begin + 1: (test_begin + test_len + 1)]
     test_y = normalized_test_lable[:, 0]
@@ -191,10 +202,11 @@ def train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_t
     The loss are accumulated to monitor the progress of the training. 
     20 iteration is generally enough to achieve an acceptable accuracy.
     """
-
+    saver = tf.train.Saver()
     with tf.Session() as sess:
         # Initializing the variables
         sess.run(tf.global_variables_initializer())
+        saver.restore(sess, "save/model.ckpt")
         # repeat training 50 times
         for epoch in range(iter_time):
             for step in range(len(batch_index) - 2):
@@ -212,6 +224,8 @@ def train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_t
                 # if step%100==0:
                 # print('Epoch:', epoch, 'steps: ', step,  'loss:', loss_)
         print("Training Optimization Finished! ***************************************")
+        #
+        # saver.save(sess, './my-model/model.ckpt', global_step=step, write_meta_graph=False)
 
         """Testing the model"""
         print("Prediction Begins: ****************************************************")

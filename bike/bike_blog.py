@@ -7,6 +7,14 @@ from keras.layers.recurrent import LSTM, GRU
 from keras.models import Sequential, load_model
 from pandas import read_csv
 
+
+'''
+build model
+draw picture
+
+'''
+
+
 np.random.seed(2017)
 
 
