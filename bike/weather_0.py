@@ -40,10 +40,26 @@ print(a.shape)
 print(b.shape)
 print(c.shape)
 
-
-
-# //返回商的整数部分, 抛弃余数
+# 返回商的整数部分, 抛弃余数
 # print(13/3)
 print(13//3)
 
+
+# 取第一列, 输出的是list
+print(data[:, 0])
+# 通过reshape(-1,1)变为3行一列的矩阵
+print(data[:, 0].reshape(-1, 1))
+
+
+# 扔给画图程序需要两行的矩阵
+y_test, predicted = np.array([
+    [1., -1., 2., 1.5],
+    [2., 0., 0., 1]])
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(y_test, label="Real")
+ax.legend(loc='upper left')
+plt.plot(predicted,label="Prediction")
+plt.legend(loc='upper left')
+plt.show()
 

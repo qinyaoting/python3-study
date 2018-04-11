@@ -7,9 +7,14 @@ import matplotlib.pyplot as plt
 from numpy import shape
 import matplotlib.ticker as ticker
 '''
+遗留问题:
+
 1. 画图
-2. 构造模型
-3. 那个维度是用来验证结果
+2. 保存模型文件, 下次直接读取模型
+3. 那个维度是用来验证结果 power &
+4. 怎么实际给一个值,来获得预测值
+5. Mean absolute error: 0.147 Root mean squared error: 0.224
+6. time_step
 
 '''
 
@@ -80,7 +85,7 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
 
     scaler_for_y = MinMaxScaler(feature_range=(0, 1))
     # 取第一列为y_data
-    scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))   #?2
+    scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))   #?2&
 
     # get train data
     # 0-6000为训练集
@@ -89,7 +94,9 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
     for i in range(len(normalized_train_data) - time_step):
         if i % batch_size == 0:
             batch_index.append(i)
+        # x是把normalized_train_data分成好几批
         x = normalized_train_data[i:i + time_step, 1:6]     #?1
+        # y是取i的下一行,作为
         y = normalized_train_data[i + 1:i + time_step + 1, 0, np.newaxis]
         train_x.append(x.tolist())
         train_y.append(y.tolist())
@@ -115,10 +122,11 @@ def get_test_data(time_step, test_begin, test_len):
 
     # get test data
     size = test_len // time_step
-    # 6000-6180
+    # 取的6000-6180行为测试集
     normalized_test_data = scaled_x_data[test_begin: (test_begin + test_len)]
     normalized_test_lable = scaled_x_data[test_begin + 1: (test_begin + test_len + 1)]
     test_y = normalized_test_lable[:, 0]
+    # 把测试集 分成几段
     test_x = []
     for i in range(size):
         x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:6]
@@ -202,11 +210,11 @@ def train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_t
     The loss are accumulated to monitor the progress of the training. 
     20 iteration is generally enough to achieve an acceptable accuracy.
     """
-    saver = tf.train.Saver()
+    # saver = tf.train.Saver()
     with tf.Session() as sess:
         # Initializing the variables
         sess.run(tf.global_variables_initializer())
-        saver.restore(sess, "save/model.ckpt")
+        # saver.restore(sess, "save/model.ckpt")
         # repeat training 50 times
         for epoch in range(iter_time):
             for step in range(len(batch_index) - 2):
