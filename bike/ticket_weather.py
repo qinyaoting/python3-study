@@ -7,37 +7,16 @@ import matplotlib.pyplot as plt
 from numpy import shape
 import matplotlib.ticker as ticker
 '''
-遗留问题:
-
-I II III IV V
-1. 画图 &
-2. 保存模型文件, 下次直接读取模型
-3. 那个维度是用来验证结果 发电量 &
-4. 怎么实际给一个值,来获得预测值
-5. Mean absolute error: 0.147 Root mean squared error: 0.224   
-    平均绝对误差（MAE）损失函数 均方根误差
-
-6. time_step &
-
 '''
 
 """
 Load data into pandas
 """
-df = pd.read_csv('WindPower2012.csv', error_bad_lines=False)
+df = pd.read_csv('ticket_weather.csv', error_bad_lines=False)
 print("Length of original data : ", len(df))
 
-# calculate the mean value for every hour and save as a new dataframe
-# 每隔5分钟收集一次数据, 一个小时收集12次, 把12次合并到每小时计算平均值
-data2 = []
-for i in range(len(df) // 12):
-    data2.append(df[i * 12:(i + 1) * 12].mean())
-data2 = pd.DataFrame(data2)
-print("Length of hourly averaged data : ", len(data2))
-
-# Get the values of the 6-11 columns
-# 取5到10列, 共6列数据 发电量 风向 风速 气温 气压 密度 index=0 1 2 3 4 5
-data = data2.iloc[:, 5:11].values
+# Get the values of the 6 columns
+data = df.iloc[:, 1:7].values
 
 """
 Set Parameters:
@@ -45,17 +24,17 @@ Next we set the RNN model parameters. We will run the data through 20 epochs, in
 The RNN will be of size 10 units.   
 """
 rnn_unit = 10  # hidden layer units
-input_size = 5  # 对应用于训练模型的5列数据, 另外一列是测试结果用的
+input_size = 5  # 对应5列数据
 output_size = 1
 lr = 0.0006  # learning rate
 
-batch_size = 14     # 每批14条记录
-time_step = 6       # LSTM 认为每个输入数据与前多少个陆续输入的数据有联系
+batch_size = 14
+time_step = 6
 
 train_begin = 0
-train_end = 6000
-test_begin = 6000
-test_len = 180
+train_end = 2000
+test_begin = 2000
+test_len = 96
 iter_time = 50
 
 # RNN output node weights and biases
@@ -92,7 +71,6 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
     # scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))   #?2&
 
     # get train data
-    # 0-6000为训练集,共8784条记录
     normalized_train_data = scaled_x_data[train_begin:train_end]
     train_x, train_y = [], []
     for i in range(len(normalized_train_data) - time_step):
@@ -126,7 +104,6 @@ def get_test_data(time_step, test_begin, test_len):
 
     # get test data
     size = test_len // time_step
-    # 取的6000-6180行为测试集
     normalized_test_data = scaled_x_data[test_begin: (test_begin + test_len)]
     normalized_test_lable = scaled_x_data[test_begin + 1: (test_begin + test_len + 1)]
     test_y = normalized_test_lable[:, 0]
@@ -218,7 +195,6 @@ def train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_t
     with tf.Session() as sess:
         # Initializing the variables
         sess.run(tf.global_variables_initializer())
-        # saver.restore(sess, "save/model.ckpt")
         # repeat training 50 times
         for epoch in range(iter_time):
             for step in range(len(batch_index) - 2):
@@ -236,9 +212,6 @@ def train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_t
                 # if step%100==0:
                 # print('Epoch:', epoch, 'steps: ', step,  'loss:', loss_)
         print("Training Optimization Finished! ***************************************")
-        #
-        # saver.save(sess, './my-model/model.ckpt', global_step=step, write_meta_graph=False)
-
         """Testing the model"""
         print("Prediction Begins: ****************************************************")
         test_x, test_y, scaler_for_x, scaler_for_y = get_test_data(time_step, test_begin, test_len)
