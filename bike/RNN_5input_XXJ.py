@@ -55,7 +55,7 @@ time_step = 6       # LSTM 认为每个输入数据与前多少个陆续输入�
 train_begin = 0
 train_end = 6000
 test_begin = 6000
-test_len = 180
+test_len = 360
 iter_time = 50
 
 # RNN output node weights and biases

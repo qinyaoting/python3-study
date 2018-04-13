@@ -24,17 +24,17 @@ Next we set the RNN model parameters. We will run the data through 20 epochs, in
 The RNN will be of size 10 units.   
 """
 rnn_unit = 10  # hidden layer units
-input_size = 5  # 对应5列数据
+input_size = 3  # 对应5列数据
 output_size = 1
 lr = 0.0006  # learning rate
 
 batch_size = 14
-time_step = 6
+time_step = 4
 
 train_begin = 0
 train_end = 2000
 test_begin = 2000
-test_len = 96
+test_len = 360
 iter_time = 50
 
 # RNN output node weights and biases
@@ -77,8 +77,8 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
         if i % batch_size == 0:
             batch_index.append(i)
         # x是把normalized_train_data分成好几批, 往后错1
-        x = normalized_train_data[i:i + time_step, 1:6]     #?1
-        # y是取i的下一行第一列(发电量),作为模型验证的值
+        x = normalized_train_data[i:i + time_step, 1:4]     #?1
+        # y是取i的下一行第一列(游客数量),作为模型验证的值
         y = normalized_train_data[i + 1:i + time_step + 1, 0, np.newaxis]
         train_x.append(x.tolist())
         train_y.append(y.tolist())
@@ -110,7 +110,7 @@ def get_test_data(time_step, test_begin, test_len):
     # 把测试集 分成几段
     test_x = []
     for i in range(size):
-        x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:6]
+        x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:4]
         test_x.append(x.tolist())
     return test_x, test_y, scaler_for_x, scaler_for_y
 
@@ -152,7 +152,7 @@ def lstm(X):
     output = tf.reshape(output_rnn, [-1, rnn_unit])
     w_out = weights['out']
     b_out = biases['out']
-    ## Get the last output
+    # Get the last output
     pred = tf.matmul(output, w_out) + b_out
     return pred, final_states
 
@@ -250,6 +250,51 @@ def draw_picture(test_y, test_predict):
     plt.show()
 
 
+# 画折线图
+def draw_line():
+
+    start = 2360
+    index = -1
+
+    data_x = pd.read_csv("ticket_weather.csv")
+    y1 = data_x['tourist_num'][start:index].T.values
+    # x1 = data_x['date'][start:index].T.values
+    # y1 = [10, 13, 5, 40, 30, 60, 70, 12, 55, 25]
+    x1 = range(0, len(y1))
+    # x2 = range(0, 10)
+    # y2 = [5, 8, 0, 30, 20, 40, 50, 10, 40, 15]
+    plt.plot(x1, y1, label='Frist line')
+    plt.autoscale()
+    # plt.plot(x2, y2, label='second line')
+    plt.xlabel('Plot Number')
+    plt.ylabel('Important var')
+    plt.title('Interesting Graph\nCheck it out')
+    plt.legend()
+    plt.show()
+
+def draw_curve():
+    # load dataset
+    year_num = 4
+    days_per_year = 365
+
+    dataset = pd.read_csv('ticket_weather.csv', header=0, index_col=0)
+    values = dataset[year_num*days_per_year:(year_num+1)*days_per_year].values
+    # specify columns to plot
+    groups = [0, 1, 2, 3, 5]
+    i = 1
+    # plot each column
+    plt.figure()
+    for group in groups:
+        plt.subplot(len(groups), 1, i)
+        plt.plot(values[:, group])
+        plt.title(dataset.columns[group], y=0.5, loc='right')
+        i += 1
+    plt.show()
+
+
 if __name__ == '__main__':
     test_y, test_predict, loss_list, rmse, mae = train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_time, test_len)
     draw_picture(test_y, test_predict)
+    # draw_line()
+    # draw_curve()
+
