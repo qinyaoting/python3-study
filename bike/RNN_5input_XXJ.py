@@ -9,7 +9,7 @@ import matplotlib.ticker as ticker
 '''
 遗留问题:
 
-I II III IV V
+I II III IV V VI
 1. 画图 &
 2. 保存模型文件, 下次直接读取模型
 3. 那个维度是用来验证结果 发电量 &
@@ -55,7 +55,7 @@ time_step = 6       # LSTM 认为每个输入数据与前多少个陆续输入�
 train_begin = 0
 train_end = 6000
 test_begin = 6000
-test_len = 360
+test_len = 180
 iter_time = 50
 
 # RNN output node weights and biases

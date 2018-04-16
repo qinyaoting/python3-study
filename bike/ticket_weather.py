@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+from sklearn import preprocessing
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 import matplotlib.pyplot as plt
 from numpy import shape
 import matplotlib.ticker as ticker
@@ -12,29 +13,31 @@ import matplotlib.ticker as ticker
 """
 Load data into pandas
 """
-df = pd.read_csv('ticket_weather.csv', error_bad_lines=False)
+df = pd.read_csv('ticket_weather_all.csv', error_bad_lines=False)
 print("Length of original data : ", len(df))
 
 # Get the values of the 6 columns
 data = df.iloc[:, 1:7].values
 
+# ddd = pd.get_dummies(data, columns=data.columns)#['weather_condition','wind_direction','wind_power'])
+# print(len(ddd))
 """
 Set Parameters:
 Next we set the RNN model parameters. We will run the data through 20 epochs, in batch sizes of 14.
 The RNN will be of size 10 units.   
 """
 rnn_unit = 10  # hidden layer units
-input_size = 3  # 对应5列数据
+input_size = 5  # 对应5列数据
 output_size = 1
 lr = 0.0006  # learning rate
 
-batch_size = 14
-time_step = 4
+batch_size = 25
+time_step = 5
 
 train_begin = 0
-train_end = 2000
-test_begin = 2000
-test_len = 360
+train_end = 2600
+test_begin = 2399
+test_len = 200
 iter_time = 50
 
 # RNN output node weights and biases
@@ -67,6 +70,7 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
     scaled_x_data = scaler_for_x.fit_transform(data)
 
     scaler_for_y = MinMaxScaler(feature_range=(0, 1))
+
     # 取第一列(发电量)为y_data
     # scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))   #?2&
 
@@ -77,7 +81,7 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
         if i % batch_size == 0:
             batch_index.append(i)
         # x是把normalized_train_data分成好几批, 往后错1
-        x = normalized_train_data[i:i + time_step, 1:4]     #?1
+        x = normalized_train_data[i:i + time_step, 1:6]     #?1
         # y是取i的下一行第一列(游客数量),作为模型验证的值
         y = normalized_train_data[i + 1:i + time_step + 1, 0, np.newaxis]
         train_x.append(x.tolist())
@@ -110,7 +114,7 @@ def get_test_data(time_step, test_begin, test_len):
     # 把测试集 分成几段
     test_x = []
     for i in range(size):
-        x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:4]
+        x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:6]
         test_x.append(x.tolist())
     return test_x, test_y, scaler_for_x, scaler_for_y
 
@@ -253,10 +257,10 @@ def draw_picture(test_y, test_predict):
 # 画折线图
 def draw_line():
 
-    start = 2360
-    index = -1
+    start = 2400
+    index = 2500
 
-    data_x = pd.read_csv("ticket_weather.csv")
+    data_x = pd.read_csv("ticket_weather_all.csv")
     y1 = data_x['tourist_num'][start:index].T.values
     # x1 = data_x['date'][start:index].T.values
     # y1 = [10, 13, 5, 40, 30, 60, 70, 12, 55, 25]
@@ -277,7 +281,7 @@ def draw_curve():
     year_num = 4
     days_per_year = 365
 
-    dataset = pd.read_csv('ticket_weather.csv', header=0, index_col=0)
+    dataset = pd.read_csv('ticket_weather_all.csv', header=0, index_col=0)
     values = dataset[year_num*days_per_year:(year_num+1)*days_per_year].values
     # specify columns to plot
     groups = [0, 1, 2, 3, 5]
