@@ -1,13 +1,8 @@
 import pandas as pd
-import numpy as np
 import tensorflow as tf
-from sklearn.metrics import mean_absolute_error,mean_squared_error
-from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
 from numpy import shape
-import matplotlib.ticker as ticker
 
-from bike import RNN_5input_XXJ
+from wind_power import RNN_5input_XXJ
 
 """
 Load data into pandas

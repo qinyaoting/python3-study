@@ -7,20 +7,33 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 import matplotlib.pyplot as plt
 from numpy import shape
 import matplotlib.ticker as ticker
+from sklearn_pandas import DataFrameMapper
+
 '''
 '''
 
 """
 Load data into pandas
 """
+columns = ['date', 'tourist_num', 'max_temperature', 'min_temperature',
+              'weather_condition', 'wind_direction', 'wind_power']
 df = pd.read_csv('ticket_weather_all.csv', error_bad_lines=False)
 print("Length of original data : ", len(df))
 
+# print(df.head())
 # Get the values of the 6 columns
-data = df.iloc[:, 1:7].values
-
-# ddd = pd.get_dummies(data, columns=data.columns)#['weather_condition','wind_direction','wind_power'])
-# print(len(ddd))
+# a1 = df.iloc[:, :4]
+scaler_for_y = MinMaxScaler(feature_range=(0, 1))
+a1 = scaler_for_y.fit_transform(df[['tourist_num']])
+a11 = scaler_for_y.fit_transform(df[['max_temperature']])
+a111 = scaler_for_y.fit_transform(df[['min_temperature']])
+one_hot_encoder = OneHotEncoder(sparse=False)
+a2 = one_hot_encoder.fit_transform(df[['weather_condition']])
+a22 = one_hot_encoder.fit_transform(df[['wind_direction']])
+a222 = one_hot_encoder.fit_transform(df[['wind_power']])
+data = np.hstack((a1,a11,a111, a2,a22,a222))
+# print(data)
+# data = df.iloc[:, 1:7].values
 """
 Set Parameters:
 Next we set the RNN model parameters. We will run the data through 20 epochs, in batch sizes of 14.
@@ -32,7 +45,7 @@ output_size = 1
 lr = 0.0006  # learning rate
 
 batch_size = 25
-time_step = 5
+time_step = 20
 
 train_begin = 0
 train_end = 2600
@@ -65,14 +78,22 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
 
     # normalize the data
     # 标准化
-    scaler_for_x = MinMaxScaler(feature_range=(0, 1))
+    # scaler_for_x = MinMaxScaler(feature_range=(0, 1))
     # 把数据缩放到0到1
-    scaled_x_data = scaler_for_x.fit_transform(data)
+    # scaled_x_data = scaler_for_x.fit_transform(data)
 
-    scaler_for_y = MinMaxScaler(feature_range=(0, 1))
+    # scaler_for_y = MinMaxScaler(feature_range=(0, 1))
 
     # 取第一列(发电量)为y_data
     # scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))   #?2&
+
+    # mapper = DataFrameMapper([
+    #     (['tourist_num', 'max_temperature', 'min_temperature'], MinMaxScaler()),
+    #     (['weather_condition', 'wind_direction', 'wind_power'], OneHotEncoder())
+    # ])
+    #
+    # scaled_x_data = mapper.fit_transform(data)
+    scaled_x_data = data
 
     # get train data
     normalized_train_data = scaled_x_data[train_begin:train_end]
@@ -103,8 +124,19 @@ def get_test_data(time_step, test_begin, test_len):
     # normalize the data
     scaler_for_x = MinMaxScaler(feature_range=(0, 1))
     scaler_for_y = MinMaxScaler(feature_range=(0, 1))
-    scaled_x_data = scaler_for_x.fit_transform(data)
-    scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))
+    # scaled_x_data = scaler_for_x.fit_transform(data)
+    # scaled_y_data = scaler_for_y.fit_transform(data[:, 0].reshape(-1, 1))
+
+    # mapper = DataFrameMapper([
+    #     ((['tourist_num', 'max_temperature', 'min_temperature'], MinMaxScaler())),
+    #     ((['weather_condition', 'wind_direction', 'wind_power'], OneHotEncoder()))
+    # ])
+    #
+    # scaled_x_data = mapper.fit_transform(data)
+    # scaled_y_data = mapper.fit_transform(data[:, 0].reshape(-1, 1))
+
+    scaled_x_data = data
+    scaled_y_data = data[:, 0].reshape(-1, 1)
 
     # get test data
     size = test_len // time_step
@@ -116,7 +148,8 @@ def get_test_data(time_step, test_begin, test_len):
     for i in range(size):
         x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:6]
         test_x.append(x.tolist())
-    return test_x, test_y, scaler_for_x, scaler_for_y
+    # return test_x, test_y, scaler_for_x, scaler_for_y
+    return test_x, test_y
 
 
 """
@@ -218,7 +251,7 @@ def train_lstm(batch_size, time_step, train_begin, train_end, test_begin, iter_t
         print("Training Optimization Finished! ***************************************")
         """Testing the model"""
         print("Prediction Begins: ****************************************************")
-        test_x, test_y, scaler_for_x, scaler_for_y = get_test_data(time_step, test_begin, test_len)
+        test_x, test_y = get_test_data(time_step, test_begin, test_len)
         print("Shape of testing samples:", shape(test_x))
 
         test_predict = []
