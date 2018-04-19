@@ -3,10 +3,15 @@ import numpy as np #科学计算
 from pandas import Series,DataFrame
 import matplotlib.pyplot as plt
 
+'''
+泰坦尼克号幸存人员预测
+'''
+
+
 data_train = pd.read_csv("train.csv")
 # print(data_train.head())
 # print(data_train.info())
-# print(data_train.describe())
+print(data_train.describe())
 
 # 中文乱码处理
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
@@ -17,7 +22,7 @@ def chart1():
     fig.set(alpha=0.2)  # 设定图表颜色alpha参数
 
     plt.subplot2grid((2, 3), (0, 0))  # 在一张大图里分列几个小图
-    data_train.Survived.value_counts().plot(kind='bar')  # 柱状图
+    data_train.Survived.value_counts().plot(kind='bar')  # 柱状图  1?value_counts()&
     plt.title(u"获救情况 (1为获救)")  # 标题
     plt.ylabel(u"人数")
 
@@ -27,7 +32,7 @@ def chart1():
     plt.title(u"乘客等级分布")
 
     plt.subplot2grid((2, 3), (0, 2))
-    plt.scatter(data_train.Survived, data_train.Age)
+    plt.scatter(data_train.Survived, data_train.Age)    #?2
     plt.ylabel(u"年龄")  # 设定纵坐标名称
     plt.grid(b=True, which='major', axis='y')
     plt.title(u"按年龄看获救分布 (1为获救)")
@@ -145,10 +150,10 @@ if __name__ == '__main__':
 
     g = data_train.groupby(['SibSp', 'Survived'])
     df = pd.DataFrame(g.count()['PassengerId'])
-    print(df)
+    # print(df)
 
     g = data_train.groupby(['SibSp', 'Survived'])
     df = pd.DataFrame(g.count()['PassengerId'])
-    print(df)
+    # print(df)
 
-    chart6()
+    chart2()

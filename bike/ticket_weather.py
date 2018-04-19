@@ -31,7 +31,10 @@ one_hot_encoder = OneHotEncoder(sparse=False)
 a2 = one_hot_encoder.fit_transform(df[['weather_condition']])
 a22 = one_hot_encoder.fit_transform(df[['wind_direction']])
 a222 = one_hot_encoder.fit_transform(df[['wind_power']])
-data = np.hstack((a1,a11,a111, a2,a22,a222))
+a3 = df['date'].reshape(-1,1)
+a4 = one_hot_encoder.fit_transform(df[['hot_rank']])
+
+data = np.hstack((a1,a11,a111, a2,a22,a222, a3, a4))
 # print(data)
 # data = df.iloc[:, 1:7].values
 """
@@ -39,8 +42,8 @@ Set Parameters:
 Next we set the RNN model parameters. We will run the data through 20 epochs, in batch sizes of 14.
 The RNN will be of size 10 units.   
 """
-rnn_unit = 10  # hidden layer units
-input_size = 5  # 对应5列数据
+rnn_unit = 14  # hidden layer units
+input_size = 7  # 对应5列数据
 output_size = 1
 lr = 0.0006  # learning rate
 
@@ -49,9 +52,9 @@ time_step = 20
 
 train_begin = 0
 train_end = 2600
-test_begin = 2399
+test_begin = 2300
 test_len = 200
-iter_time = 50
+iter_time = 100
 
 # RNN output node weights and biases
 weights = {
@@ -102,7 +105,7 @@ def get_train_data(batch_size, time_step, train_begin, train_end):
         if i % batch_size == 0:
             batch_index.append(i)
         # x是把normalized_train_data分成好几批, 往后错1
-        x = normalized_train_data[i:i + time_step, 1:6]     #?1
+        x = normalized_train_data[i:i + time_step, 1:8]     #?1
         # y是取i的下一行第一列(游客数量),作为模型验证的值
         y = normalized_train_data[i + 1:i + time_step + 1, 0, np.newaxis]
         train_x.append(x.tolist())
@@ -146,7 +149,7 @@ def get_test_data(time_step, test_begin, test_len):
     # 把测试集 分成几段
     test_x = []
     for i in range(size):
-        x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:6]
+        x = normalized_test_data[i * time_step:(i + 1) * time_step, 1:8]
         test_x.append(x.tolist())
     # return test_x, test_y, scaler_for_x, scaler_for_y
     return test_x, test_y

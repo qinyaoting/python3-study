@@ -56,7 +56,7 @@ train_begin = 0
 train_end = 6000
 test_begin = 6000
 test_len = 180
-iter_time = 50
+iter_time = 100
 
 # RNN output node weights and biases
 weights = {
